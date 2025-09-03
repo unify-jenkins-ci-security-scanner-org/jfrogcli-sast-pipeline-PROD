@@ -11,14 +11,17 @@ pipeline {
   stages {
     stage('Install JFrog CLI') {
       steps {
-        sh '''
-          if [ ! -f "$WORKSPACE/jf" ]; then
-              echo ":package: Downloading JFrog CLI to workspace..."
-              curl -fL https://releases.jfrog.io/artifactory/jfrog-cli/v2-jf/latest/jfrog/jfrog-cli-linux-amd64/jf -o jf
-              chmod +x jf
-          fi
-          ./jf --version
-        '''
+        retry(3) {
+          sh '''
+            if [ ! -f "$WORKSPACE/jf" ]; then
+              echo ":package: Installing JFrog CLI via official installer..."
+              curl -fL https://install-cli.jfrog.io | sh
+              mv jf "$WORKSPACE/jf"
+              chmod +x "$WORKSPACE/jf"
+            fi
+            "$WORKSPACE/jf" --version
+          '''
+        }
       }
     }
 
@@ -31,7 +34,7 @@ pipeline {
         )]) {
           sh '''
             echo ":key: Configuring JFrog CLI with provided credentials..."
-            ./jf config add cbjfrog-server \
+            "$WORKSPACE/jf" config add cbjfrog-server \
               --url=${JFROG_SERVER} \
               --user=$JF_USER \
               --password=$JF_PASS \
@@ -45,7 +48,7 @@ pipeline {
       steps {
         sh '''
           echo ":mag: Scanning image.tar using JFrog CLI..."
-          ./jf scan "${IMAGE_TAR}" --format=sarif > jfrog-sarif-results.sarif || true
+          "$WORKSPACE/jf" scan "${IMAGE_TAR}" --format=sarif > jfrog-sarif-results.sarif || true
         '''
       }
     }
