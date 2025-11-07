@@ -2,9 +2,10 @@ pipeline {
   agent any
 
   environment {
-    JFROG_SERVER = "https://cbunifydev.jfrog.io"  // JFrog Cloud URL with sast scanner
+    JFROG_SERVER = "https://cbunifydev.jfrog.io"  // JFrog Cloud URL with SAST
     JFROG_CLI_PATH = "${env.WORKSPACE}/jf"
-    SAST_PROJECT_DIR = "${env.WORKSPACE}/vulnado"
+    SAST_PROJECT_DIR = "${env.WORKSPACE}/vulnado" 
+    JFROG_SERVER_ID = "cbunifydev"
   }
 
   stages {
@@ -38,6 +39,9 @@ pipeline {
               --user=$JF_USER \
               --password=$JF_PASS \
               --interactive=false || ./jf config use cbjfrog-server-jenkins
+
+            ./jf c use ${JFROG_SERVER_ID}
+            ./jf c show
           '''
         }
       }
@@ -47,6 +51,18 @@ pipeline {
       steps {
         sh '''
           echo "🔍 Listing contents of project directory:"
+          ls -la "${SAST_PROJECT_DIR}"
+        '''
+      }
+    }
+
+    stage('Debug Environment and Project') {
+      steps {
+        sh '''
+          echo "🔍 Checking JFrog feature flags:"
+          ./jf xr curl api/v1/feature_flags | grep -i sast || true
+
+          echo "🔍 Listing project files in ${SAST_PROJECT_DIR}:"
           ls -la "${SAST_PROJECT_DIR}"
         '''
       }
@@ -65,7 +81,10 @@ pipeline {
 
     stage('Display SARIF Output') {
       steps {
-        sh 'cat jfrog-sarif-sast-results.sarif || echo "No SARIF output found."'
+        sh '''
+          echo "📜 SAST SARIF Output Preview:"
+          head -n 50 jfrog-sarif-sast-results.sarif || echo "No SARIF output found."
+        '''
       }
     }
   }
