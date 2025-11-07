@@ -1,7 +1,7 @@
 pipeline {
   agent any
 
-  nvironment {
+  environment {
     JFROG_SERVER = "https://cbunifydev.jfrog.io"  // JFrog Cloud URL with SAST
     JFROG_CLI_PATH = "${env.WORKSPACE}/jf"
     SAST_PROJECT_DIR = "${env.WORKSPACE}/vulnado" 
