@@ -1,11 +1,11 @@
 pipeline {
   agent any
 
-  environment {
+  nvironment {
     JFROG_SERVER = "https://cbunifydev.jfrog.io"  // JFrog Cloud URL with SAST
     JFROG_CLI_PATH = "${env.WORKSPACE}/jf"
     SAST_PROJECT_DIR = "${env.WORKSPACE}/vulnado" 
-    JFROG_SERVER_ID = "cbunifydev"
+    JFROG_SERVER_ID = "cbjfrog-server-jenkins"   // Reusing the same config name
   }
 
   stages {
@@ -33,13 +33,19 @@ pipeline {
           passwordVariable: 'JF_PASS'
         )]) {
           sh '''
-            echo ":key: Configuring JFrog CLoud CLI with credentials..."
-            ./jf config add cbjfrog-server-jenkins \
+            echo ":key: Ensuring JFrog CLI is configured for cbunifydev..."
+
+            # Remove existing config (optional first-time cleanup)
+            ./jf c rm ${JFROG_SERVER_ID} --quiet || true
+
+            # Add updated config for cbunifydev JFrog Cloud
+            ./jf c add ${JFROG_SERVER_ID} \
               --url=${JFROG_SERVER} \
               --user=$JF_USER \
               --password=$JF_PASS \
-              --interactive=false || ./jf config use cbjfrog-server-jenkins
+              --interactive=false
 
+            # Use this configuration
             ./jf c use ${JFROG_SERVER_ID}
             ./jf c show
           '''
@@ -73,7 +79,7 @@ pipeline {
         dir("${env.SAST_PROJECT_DIR}") {
           sh '''
             echo ":mag: Running JFrog SAST scan..."
-            ../jf aud . --sast --format sarif > ../jfrog-sarif-sast-results.sarif || true
+            ../jf aud --sast --format=sarif ./www-project-vulnerable-flask-app > flask_jfrog_sast.sarif || true
           '''
         }
       }
@@ -83,7 +89,7 @@ pipeline {
       steps {
         sh '''
           echo "📜 SAST SARIF Output Preview:"
-          head -n 50 jfrog-sarif-sast-results.sarif || echo "No SARIF output found."
+          head -n 50 flask_jfrog_sast.sarif || echo "No SARIF output found."
         '''
       }
     }
@@ -91,8 +97,8 @@ pipeline {
 
   post {
     always {
-      archiveArtifacts artifacts: 'jfrog-sarif-sast-results.sarif', fingerprint: true
-      echo "📄 SARIF file archived as 'jfrog-sarif-sast-results.sarif'"
+      archiveArtifacts artifacts: 'flask_jfrog_sast.sarif', fingerprint: true
+      echo "📄 SARIF file archived as 'flask_jfrog_sast.sarif'"
     }
   }
 }
