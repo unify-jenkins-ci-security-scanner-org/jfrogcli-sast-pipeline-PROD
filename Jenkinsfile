@@ -4,7 +4,7 @@ pipeline {
   environment {
     JFROG_SERVER = "https://cbunifydev.jfrog.io"  // JFrog Cloud URL with SAST
     JFROG_CLI_PATH = "${env.WORKSPACE}/jf"
-    SAST_PROJECT_DIR = "${env.WORKSPACE}/vulnado" 
+    SAST_PROJECT_DIR = "${env.WORKSPACE}" 
     JFROG_SERVER_ID = "cbjfrog-server-jenkins"   // Reusing the same config name
   }
 
@@ -79,7 +79,7 @@ pipeline {
         dir("${env.SAST_PROJECT_DIR}") {
           sh '''
             echo ":mag: Running JFrog SAST scan..."
-            ../jf aud --sast --format=sarif ./www-project-vulnerable-flask-app > flask_jfrog_sast.sarif || true
+            ../jf aud --sast --format=sarif . > main_jfrog_sast.sarif || true
           '''
         }
       }
@@ -89,7 +89,7 @@ pipeline {
       steps {
         sh '''
           echo "📜 SAST SARIF Output Preview:"
-          head -n 50 flask_jfrog_sast.sarif || echo "No SARIF output found."
+          head -n 50 main_jfrog_sast.sarif || echo "No SARIF output found."
         '''
       }
     }
@@ -97,8 +97,8 @@ pipeline {
 
   post {
     always {
-      archiveArtifacts artifacts: 'vulnado/flask_jfrog_sast.sarif', fingerprint: true
-      echo "📄 SARIF file archived as 'flask_jfrog_sast.sarif'"
+      archiveArtifacts artifacts: 'main_jfrog_sast.sarif', fingerprint: true
+      echo "📄 SARIF file archived as 'main_jfrog_sast.sarif'"
     }
   }
 }
