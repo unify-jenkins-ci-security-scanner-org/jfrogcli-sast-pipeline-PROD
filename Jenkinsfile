@@ -57,7 +57,7 @@ pipeline {
         dir("${env.SAST_PROJECT_DIR}") {
           sh '''
             echo ":mag: Running JFrog SAST scan..."
-            ../jf audit . --sast --format sarif > ../jfrog-sarif-sast-results.sarif || true
+            ../jf aud . --sast --format sarif > ../jfrog-sarif-sast-results.sarif || true
           '''
         }
       }
