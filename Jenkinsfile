@@ -13,13 +13,13 @@ pipeline {
       steps {
         retry(3) {
           sh '''
-            if [ ! -f "$WORKSPACE/jf" ]; then
+            if [ ! -f "$JFROG_CLI_PATH" ]; then
               echo ":package: Downloading JFrog CLI from install-cli.jfrog.io..."
               curl -fL https://install-cli.jfrog.io | sh
               chmod +x jfrog
-              mv jfrog jf  # Rename to 'jf' for consistency in pipeline
+              mv jfrog "$JFROG_CLI_PATH"  # Rename to 'jf' for consistency in pipeline
             fi
-            ./jf --version
+            "$JFROG_CLI_PATH" --version
           '''
         }
       }
@@ -36,18 +36,18 @@ pipeline {
             echo ":key: Ensuring JFrog CLI is configured for cbunifydev..."
 
             # Remove existing config (optional first-time cleanup)
-            ./jf c rm ${JFROG_SERVER_ID} --quiet || true
+            "$JFROG_CLI_PATH" c rm ${JFROG_SERVER_ID} --quiet || true
 
             # Add updated config for cbunifydev JFrog Cloud
-            ./jf c add ${JFROG_SERVER_ID} \
+            "$JFROG_CLI_PATH" c add ${JFROG_SERVER_ID} \
               --url=${JFROG_SERVER} \
               --user=$JF_USER \
               --password=$JF_PASS \
               --interactive=false
 
             # Use this configuration
-            ./jf c use ${JFROG_SERVER_ID}
-            ./jf c show
+            "$JFROG_CLI_PATH" c use ${JFROG_SERVER_ID}
+            "$JFROG_CLI_PATH" rt ping
           '''
         }
       }
@@ -66,7 +66,7 @@ pipeline {
       steps {
         sh '''
           echo "🔍 Checking JFrog feature flags:"
-          ./jf xr curl api/v1/feature_flags | grep -i sast || true
+          "$JFROG_CLI_PATH" xr curl api/v1/feature_flags | grep -i sast || true
 
           echo "🔍 Listing project files in ${SAST_PROJECT_DIR}:"
           ls -la "${SAST_PROJECT_DIR}"
@@ -79,7 +79,7 @@ pipeline {
         dir("${env.SAST_PROJECT_DIR}") {
           sh '''
             echo ":mag: Running JFrog SAST scan..."
-            ../jf aud --sast --format=sarif . > main_jfrog_sast.sarif || true
+            "$JFROG_CLI_PATH" aud --sast --format=sarif . > main_jfrog_sast.sarif || true
           '''
         }
       }
@@ -89,7 +89,7 @@ pipeline {
       steps {
         sh '''
           echo "📜 SAST SARIF Output Preview:"
-          head -n 50 main_jfrog_sast.sarif || echo "No SARIF output found."
+          head -n 50 ${SAST_PROJECT_DIR}/main_jfrog_sast.sarif || echo "No SARIF output found."
         '''
       }
     }
@@ -97,7 +97,7 @@ pipeline {
 
   post {
     always {
-      archiveArtifacts artifacts: 'main_jfrog_sast.sarif', fingerprint: true
+      archiveArtifacts artifacts: '**/main_jfrog_sast.sarif', fingerprint: true
       echo "📄 SARIF file archived as 'main_jfrog_sast.sarif'"
     }
   }
