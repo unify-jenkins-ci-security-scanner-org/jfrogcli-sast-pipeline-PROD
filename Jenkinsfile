@@ -101,7 +101,7 @@ pipeline {
                   echo "File exists, registering scan..."
                   registerSecurityScan(
                       artifacts: "fake-jfrog-sast-findings.sarif",
-                      format: "",
+                      format: "sarif",
                       archive: false
                   )
               } else {
