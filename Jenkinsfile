@@ -100,7 +100,7 @@ pipeline {
               if (fileExists("WebGoat/fake-jfrog-sast-findings.sarif")) {
                   echo "File exists, registering scan..."
                   registerSecurityScan(
-                      artifacts: "WebGoat/fake-jfrog-sast-findings.sarif",
+                      artifacts: "${WORKSPACE}/WebGoat/fake-jfrog-sast-findings.sarif",
                       format: "sarif",
                       scanner: "jfrog-xray-sast",
                       archive: true
