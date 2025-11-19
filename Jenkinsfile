@@ -4,7 +4,7 @@ pipeline {
   environment {
     JFROG_SERVER = "https://cbunifydev.jfrog.io"  // JFrog Cloud URL with SAST
     JFROG_CLI_PATH = "${env.WORKSPACE}/jf"
-    SAST_PROJECT_DIR = "${env.WORKSPACE}/dvna" // entire repo - "${env.WORKSPACE}" 
+    SAST_PROJECT_DIR = "${env.WORKSPACE}/WebGoat" // entire repo - "${env.WORKSPACE}" 
     JFROG_SERVER_ID = "cbjfrog-server-jenkins"   // Reusing the same config name
   }
 
@@ -79,7 +79,7 @@ pipeline {
         dir("${env.SAST_PROJECT_DIR}") {
           sh '''
             echo ":mag: Running JFrog SAST scan..."
-            "$JFROG_CLI_PATH" aud --sast --format=sarif . > dvna_jfrog_sast.sarif || true
+            "$JFROG_CLI_PATH" aud --sast --format=sarif . > WebGoat_jfrog_sast.sarif || true
           '''
         }
       }
@@ -89,7 +89,7 @@ pipeline {
       steps {
         sh '''
           echo "📜 SAST SARIF Output Preview:"
-          head -n 50 ${SAST_PROJECT_DIR}/dvna_jfrog_sast.sarif || echo "No SARIF output found."
+          head -n 50 ${SAST_PROJECT_DIR}/WebGoat_jfrog_sast.sarif || echo "No SARIF output found."
         '''
       }
     }
@@ -97,8 +97,8 @@ pipeline {
 
   post {
     always {
-      archiveArtifacts artifacts: '**/dvna_jfrog_sast.sarif', fingerprint: true
-      echo "📄 SARIF file archived as 'dvna_jfrog_sast.sarif'"
+      archiveArtifacts artifacts: '**/WebGoat_jfrog_sast.sarif', fingerprint: true
+      echo "📄 SARIF file archived as 'WebGoat_jfrog_sast.sarif'"
     }
   }
 }
