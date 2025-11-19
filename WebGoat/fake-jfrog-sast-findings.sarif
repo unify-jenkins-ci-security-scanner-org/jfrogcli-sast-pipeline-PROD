@@ -1,0 +1,73 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "JFrog SAST",
+          "rules": [
+            {
+              "id": "java-sql-injection",
+              "shortDescription": { "text": "SQL Injection" },
+              "fullDescription": { "text": "Unsanitized user input in SQL query." },
+              "properties": {
+                "cweId": "CWE-89",
+                "severity": "High"
+              }
+            },
+            {
+              "id": "java-path-traversal",
+              "shortDescription": { "text": "Path Traversal" },
+              "fullDescription": { "text": "User-controlled file path." },
+              "properties": {
+                "cweId": "CWE-22",
+                "severity": "Medium"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "java-sql-injection",
+          "level": "error",
+          "message": { "text": "SQL query constructed with untrusted input." },
+          "properties": {
+            "cweId": "CWE-89",
+            "severity": "High"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main/java/com/example/UserController.java"
+                },
+                "region": { "startLine": 42, "startColumn": 8 }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "java-path-traversal",
+          "level": "warning",
+          "message": { "text": "File path includes user-controlled data." },
+          "properties": {
+            "cweId": "CWE-22",
+            "severity": "Medium"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main/java/com/example/FileService.java"
+                },
+                "region": { "startLine": 88, "startColumn": 4 }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
