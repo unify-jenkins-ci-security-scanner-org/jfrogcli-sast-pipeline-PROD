@@ -97,15 +97,15 @@ pipeline {
     stage('Register Security Scan') {
       steps {
           script {
-              if (fileExists("fake-jfrog-sast-findings.json")) {
+              if (fileExists("fake-jfrog-sast-findings.sarif")) {
                   echo "File exists, registering scan..."
                   registerSecurityScan(
-                      artifacts: "fake-jfrog-sast-findings.json",
+                      artifacts: "fake-jfrog-sast-findings.sarif",
                       format: "",
                       archive: false
                   )
               } else {
-                  error "fake-jfrog-sast-findings.json not found!"
+                  error "fake-jfrog-sast-findings.sarif not found!"
               }
           }
       }
