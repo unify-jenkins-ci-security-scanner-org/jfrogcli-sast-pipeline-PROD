@@ -97,7 +97,7 @@ pipeline {
     stage('Register Fake Security Scan') {
             steps {
                 script {
-                    def fakeSarif = "${SAST_PROJECT_DIR}/fake-jfrog-sast-findings.sarif"
+                    def fakeSarif = "${env.SAST_PROJECT_DIR}/fake-jfrog-sast-findings.sarif"
                     if (fileExists(fakeSarif)) {
                         echo "✅ Fake SARIF file exists. Registering scan..."
                         registerSecurityScan(
