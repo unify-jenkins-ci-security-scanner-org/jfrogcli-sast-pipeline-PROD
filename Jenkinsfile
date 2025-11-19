@@ -94,23 +94,24 @@ pipeline {
       }
     }
 
-    stage('Register Security Scan') {
-      steps {
-          script {
-              if (fileExists("WebGoat/fake-jfrog-sast-findings.sarif")) {
-                  echo "File exists, registering scan..."
-                  registerSecurityScan(
-                      artifacts: "${WORKSPACE}/WebGoat/fake-jfrog-sast-findings.sarif",
-                      format: "sarif",
-                      scanner: "jfrog-xray-sast",
-                      archive: true
-                  )
-              } else {
-                  error "fake-jfrog-sast-findings.sarif not found!"
-              }
-          }
-      }
-    }
+    stage('Register Fake Security Scan') {
+            steps {
+                script {
+                    def fakeSarif = "${SAST_PROJECT_DIR}/fake-jfrog-sast-findings.sarif"
+                    if (fileExists(fakeSarif)) {
+                        echo "✅ Fake SARIF file exists. Registering scan..."
+                        registerSecurityScan(
+                            artifacts: fakeSarif,
+                            format: "sarif",
+                            scanner: "jfrog-xray-sast",
+                            archive: true
+                        )
+                    } else {
+                        error "❌ Fake SARIF file not found at ${fakeSarif}!"
+                    }
+                }
+            }
+        }
   }
 
    
