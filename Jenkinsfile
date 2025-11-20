@@ -94,23 +94,23 @@ pipeline {
       }
     }
 
-    stage('Register Fake Security Scan') {
-  steps {
-    script {
-      def globPattern = "WebGoat/fake-jfrog-sast-findings.sarif"
-      if (fileExists("${env.WORKSPACE}/${globPattern}")) {
-        echo "✅ Fake SARIF file exists. Registering scan..."
-        registerSecurityScan(
-          artifacts: globPattern,     
-          format: "sarif",
-          scanner: "jfrog-xray-sast",
-          archive: true
-        )
-      } else {
-        error "❌ Fake SARIF file not found using glob: ${globPattern}!"
-      }
+stage("Register Fake Security Scan") {
+    dir("WebGoat") {
+        script {
+            def file = "fake-jfrog-sast-findings.sarif"
+            if (fileExists(file)) {
+                echo "✅ Fake SARIF file exists. Registering scan..."
+
+                registerSecurityScan(
+                    file: file,
+                    format: "sarif",
+                    scanner: "jfrog-xray-sast"
+                )
+            } else {
+                error "❌ Fake SARIF file not found at ${pwd()}"
+            }
+        }
     }
-  }
 }
 
   }
@@ -125,4 +125,24 @@ pipeline {
 //   }
 // }
  
+
+//     stage('Register Fake Security Scan') {
+//   steps {
+//     script {
+//       def globPattern = "WebGoat/fake-jfrog-sast-findings.sarif"
+//       if (fileExists("${env.WORKSPACE}/${globPattern}")) {
+//         echo "✅ Fake SARIF file exists. Registering scan..."
+//         registerSecurityScan(
+//           artifacts: globPattern,     
+//           format: "sarif",
+//           scanner: "jfrog-xray-sast",
+//           archive: true
+//         )
+//       } else {
+//         error "❌ Fake SARIF file not found using glob: ${globPattern}!"
+//       }
+//     }
+//   }
+// }
+
  
