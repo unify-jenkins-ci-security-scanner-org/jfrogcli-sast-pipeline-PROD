@@ -100,22 +100,23 @@ stage("Register Fake Security Scan") {
       script {
         def file = "fake-jfrog-sast-findings.sarif"
 
-        if (fileExists(file)) {
-          echo "✅ Fake SARIF file exists. Registering scan..."
-
-          registerSecurityScan(
-            file: file,
-            format: "sarif",
-            scanner: "jfrog-xray-sast",
-            archive: true
-          )
-        } else {
-          error "❌ Fake SARIF file NOT found at ${pwd()}"
+        if (!fileExists(file)) {
+          error "❌ SARIF file not found: ${pwd()}/${file}"
         }
+
+        echo "✅ Registering SARIF scan: ${file}"
+
+        registerSecurityScan(
+          files: [file],        
+          format: "sarif",
+          scanner: "jfrog-xray-sast",
+          archive: true
+        )
       }
     }
   }
 }
+
 
   }
 
