@@ -7,6 +7,10 @@ pipeline {
     SAST_PROJECT_DIR = "${env.WORKSPACE}/WebGoat" // entire repo - "${env.WORKSPACE}" 
     JFROG_SERVER_ID = "cbjfrog-server-jenkins"   // Reusing the same config name
   }
+  
+  triggers {
+        cron '25 23 * * 1,4' // Runs at 23:25 on Monday and Thursday
+        }
 
   stages {
     stage('Install JFrog CLI') {
