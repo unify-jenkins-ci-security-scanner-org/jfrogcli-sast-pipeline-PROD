@@ -10,7 +10,7 @@ pipeline {
   
   triggers {
         cron '25 23 * * 1,4' // Runs at 23:25 on Monday and Thursday
-        }
+         }
 
   stages {
     stage('Install JFrog CLI') {
@@ -88,6 +88,16 @@ pipeline {
         }
       }
     }
+    stage('Security Scan') {
+            steps {
+                registerSecurityScan(
+                    // Security Scan to include
+                    artifacts: "main_jfrog_sast.sarif",
+                    format: "sarif",
+                    archive: true
+                )
+            }
+        }
 
     stage('Display SARIF Output') {
       steps {
